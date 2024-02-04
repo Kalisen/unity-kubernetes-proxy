@@ -14,10 +14,9 @@ string configPath = args[0];
 
 TerminalService terminalService = await TerminalService.CreateAsync(configPath);
 
-var handler = Inline.Create().Get("/hello", (string name) => $"Hello {name}");
-
-
-var exec = Inline.Create().Post("/exec", (ExecRequest req) =>
+var handler = Inline.Create()
+    .Get("/", () => $"Unity Kubernetes Bridge Proxy")
+    .Post("/exec", (ExecRequest req) =>
 {
     Console.WriteLine($"Executing command {req.command} in {req.namespaceName}/{req.podName}/{req.containerName}");
     Task<string> commandTask = terminalService.Exec(req.namespaceName, req.podName, req.containerName, req.command);
@@ -32,7 +31,7 @@ Console.WriteLine($"Starting Kubernetes Immersive Proxy http://{ip}:{port}");
 Console.WriteLine("Press Ctrl+C to exit...");
 return Host.Create()
            .Bind(IPAddress.Parse(ip), port)
-           .Handler(exec)
+           .Handler(handler)
            .Defaults()
            .Console()
 #if DEBUG
